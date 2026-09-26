@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SIPEMINLAB — Sistem Peminjaman Barang Laboratorium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#1e2a5e;--brand-d:#141d47;--accent:#0f8f6f;--danger:#b3452e;--warn:#a8721f;
+  --bg:#f5f6f9;--card:#fff;--ink:#181c25;--sub:#69707f;--line:#e3e5ec;
+  --sidebar:#12151f;--sidebar-hover:rgba(255,255,255,.06);--sidebar-active:rgba(255,255,255,.10);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0f15;--card:#171a23;--ink:#e7e9ef;--sub:#9aa1b2;--line:#262b38}}
+:root[data-theme="dark"]{--bg:#0d0f15;--card:#171a23;--ink:#e7e9ef;--sub:#9aa1b2;--line:#262b38}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+code,.mono{font-family:'IBM Plex Mono',monospace}
+.hidden{display:none!important}
+/* LOGIN */
+#loginView{min-height:100%;display:flex;align-items:stretch;justify-content:center;background:var(--sidebar)}
+.login-panel{display:flex;width:100%;max-width:840px;margin:auto;border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.login-side{flex:1;background:linear-gradient(160deg,#12151f,#1e2a5e 130%);color:#dfe3f0;padding:44px 36px;display:flex;flex-direction:column;justify-content:space-between}
+.login-side .mark{font-weight:700;font-size:1.05rem;letter-spacing:.01em}
+.login-side .claim{font-size:.85rem;line-height:1.6;color:#aab0c8;max-width:220px}
+.login-side .meta{font-size:.72rem;color:#7d84a0}
+.login-box{background:var(--card);padding:44px 36px;width:100%;max-width:360px;text-align:left}
+.login-box h1{font-size:1.15rem;color:var(--ink);margin:0 0 4px;font-weight:700}
+.login-box p{color:var(--sub);font-size:.82rem;margin:0 0 22px}
+input,select{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:7px;font-size:.85rem;background:var(--bg);color:var(--ink);margin-bottom:12px;font-family:inherit}
+input:focus,select:focus{outline:2px solid #90a0e0;outline-offset:1px;border-color:var(--brand)}
+button{cursor:pointer;font-family:inherit}
+.btn{background:var(--brand);color:#fff;border:none;padding:10px 16px;border-radius:7px;font-size:.85rem;font-weight:600;width:100%;transition:background .15s}
+.btn:hover{background:var(--brand-d)}
+.btn-sm{padding:6px 11px;font-size:.75rem;width:auto;border-radius:6px;font-weight:600}
+.btn-danger{background:var(--danger)}
+.btn-accent{background:var(--accent)}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+#err{color:var(--danger);font-size:.78rem;min-height:16px;font-weight:500}
+@media(max-width:640px){.login-panel{flex-direction:column;max-width:400px}.login-side{padding:24px 28px}}
+/* APP SHELL */
+#appView{display:flex;min-height:100%}
+aside{width:224px;background:var(--sidebar);color:#fff;flex-shrink:0;padding:20px 0;display:flex;flex-direction:column}
+aside .logo{padding:0 20px 18px;font-weight:700;font-size:.95rem;letter-spacing:.01em;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:10px;color:#f2f3f8}
+aside .nav-item{display:flex;align-items:center;gap:9px;padding:10px 20px;color:#a7adc0;text-decoration:none;font-size:.83rem;font-weight:500;cursor:pointer;border-left:2px solid transparent}
+aside .nav-item.active{background:var(--sidebar-active);color:#fff;border-left-color:#7c8cf8;font-weight:600}
+aside .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+main{flex:1;padding:28px 32px;min-width:0}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.topbar h2{margin:0;font-size:1.25rem;font-weight:700;letter-spacing:-.01em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:16px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:8px;padding:14px 16px}
+.stat b{display:block;font-size:1.5rem;color:var(--ink);font-weight:700;letter-spacing:-.02em}
+.stat small{color:var(--sub);font-size:.74rem}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left}
+th{color:var(--sub);font-weight:600;font-size:.76rem}
+tbody tr:hover{background:var(--bg)}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar input{margin:0;flex:1;min-width:150px}
+.badge{padding:3px 10px;border-radius:5px;font-size:.72rem;font-weight:600}
+.badge.ok{background:rgba(15,143,111,.12);color:var(--accent)}
+.badge.late{background:rgba(179,69,46,.12);color:var(--danger)}
+.badge.wait{background:rgba(168,114,31,.12);color:var(--warn)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{background:var(--card);border-radius:12px;padding:20px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto}
+.modal h3{margin-top:0;color:var(--brand)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:.75rem;color:var(--sub);display:block;margin-bottom:3px}
+.item-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.item-row select{flex:2}
+.item-row input{flex:1}
+.small{font-size:.72rem;color:var(--sub)}
+.tablewrap{overflow-x:auto}
+@media(max-width:720px){
+  #appView{flex-direction:column}
+  aside{width:100%;display:flex;overflow-x:auto;padding:8px}
+  aside .logo{display:none}
+  aside .nav-item{white-space:nowrap;border-left:none;border-bottom:3px solid transparent}
+  aside .nav-item.active{border-left:none;border-bottom-color:#fff}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginView">
+  <div class="login-panel">
+    <div class="login-side">
+      <div class="mark">SIPEMINLAB</div>
+      <p class="claim">Kelola inventaris, peminjaman, dan pengembalian barang laboratorium sekolah dalam satu sistem.</p>
+      <div class="meta">SMK PGRI 2 Ponorogo — Laboratorium Komputer & Jaringan</div>
+    </div>
+    <div class="login-box">
+      <h1>Masuk ke akun Anda</h1>
+      <p>Gunakan kredensial admin untuk melanjutkan.</p>
+      <label>Username</label>
+      <input id="lu" value="admin">
+      <label>Password</label>
+      <input id="lp" type="password" value="admin123">
+      <div id="err"></div>
+      <button class="btn" onclick="doLogin()">Masuk</button>
+      <p class="small" style="margin-top:14px">Akun demo: admin / admin123</p>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appView" class="hidden">
+  <aside>
+    <div class="logo">🧪 SIPEMINLAB</div>
+    <a class="nav-item" data-p="dashboard">📊 Dashboard</a>
+    <a class="nav-item" data-p="barang">📦 Data Barang</a>
+    <a class="nav-item" data-p="siswa">🧑‍🎓 Data Siswa</a>
+    <a class="nav-item" data-p="pinjam">📝 Peminjaman</a>
+    <a class="nav-item" data-p="kembali">↩️ Pengembalian</a>
+    <a class="nav-item" data-p="laporan">📄 Laporan</a>
+    <a class="nav-item" onclick="doLogout()">🚪 Keluar</a>
+  </aside>
+  <main id="mainArea"></main>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+// ---------- storage ----------
+const DKEY='sipeminlab_data_v1';
+function loadData(){
+  try{
+    const raw=localStorage.getItem(DKEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return seed();
+}
+function saveData(){ try{ localStorage.setItem(DKEY, JSON.stringify(DB)); }catch(e){ console.error('save fail',e); } }
+function seed(){
+  return {
+    barang:[
+      {id:1,kode:'LT-01',nama:'Laptop Acer Aspire',kategori:'Laptop',stok:8,kondisi:'Baik'},
+      {id:2,kode:'PJ-01',nama:'Proyektor Epson',kategori:'Proyektor',stok:3,kondisi:'Baik'},
+      {id:3,kode:'RT-01',nama:'Router TP-Link',kategori:'Jaringan',stok:5,kondisi:'Baik'},
+      {id:4,kode:'SW-01',nama:'Switch 8 Port',kategori:'Jaringan',stok:4,kondisi:'Baik'}
+    ],
+    siswa:[
+      {id:1,nis:'2201',nama:'Budi Santoso',kelas:'XII RPL 1',hp:'0812xxx'},
+      {id:2,nis:'2202',nama:'Sari Wulandari',kelas:'XII RPL 2',hp:'0813xxx'}
+    ],
+    peminjaman:[],
+    nextId:{barang:5,siswa:3,pinjam:1}
+  };
+}
+let DB = loadData();
+
+// ---------- auth (session only) ----------
+let session=false;
+function doLogin(){
+  const u=document.getElementById('lu').value.trim();
+  const p=document.getElementById('lp').value.trim();
+  if(u==='admin' && p==='admin123'){
+    session=true;
+    document.getElementById('loginView').classList.add('hidden');
+    document.getElementById('appView').classList.remove('hidden');
+    goPage('dashboard');
+  } else {
+    document.getElementById('err').textContent='Username atau password salah.';
+  }
+}
+function doLogout(){
+  session=false;
+  document.getElementById('appView').classList.add('hidden');
+  document.getElementById('loginView').classList.remove('hidden');
+  document.getElementById('err').textContent='';
+}
+
+// ---------- nav ----------
+document.querySelectorAll('.nav-item[data-p]').forEach(el=>{
+  el.addEventListener('click',()=>goPage(el.dataset.p));
+});
+let currentPage='dashboard';
+function goPage(p){
+  currentPage=p;
+  document.querySelectorAll('.nav-item[data-p]').forEach(el=>el.classList.toggle('active',el.dataset.p===p));
+  const fn={dashboard:renderDashboard,barang:renderBarang,siswa:renderSiswa,pinjam:renderPinjam,kembali:renderKembali,laporan:renderLaporan}[p];
+  fn();
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function closeModal(){document.getElementById('modalRoot').innerHTML='';}
+
+// ---------- DASHBOARD ----------
+function renderDashboard(){
+  const totalBarang=DB.barang.reduce((s,b)=>s+b.stok,0);
+  const aktif=DB.peminjaman.filter(p=>p.status==='Dipinjam');
+  const today=new Date();
+  const telat=aktif.filter(p=>new Date(p.tglRencana)<today);
+  document.getElementById('mainArea').innerHTML=`
+    <div class="topbar"><h2>Dashboard</h2></div>
+    <div class="stat-grid">
+      <div class="stat"><b>${DB.barang.length}</b><small>Jenis Barang</small></div>
+      <div class="stat"><b>${totalBarang}</b><small>Total Stok Unit</small></div>
+      <div class="stat"><b>${aktif.length}</b><small>Sedang Dipinjam</small></div>
+      <div class="stat"><b style="color:var(--danger)">${telat.length}</b><small>Terlambat</small></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Transaksi Terbaru</h3>
+      <div class="tablewrap"><table><thead><tr><th>Siswa</th><th>Tgl Pinjam</th><th>Status</th></tr></thead><tbody>
+      ${DB.peminjaman.slice().reverse().slice(0,6).map(p=>{
+        const s=DB.siswa.find(x=>x.id===p.idSiswa);
+        return `<tr><td>${esc(s?s.nama:'-')}</td><td>${p.tglPinjam}</td><td>${statusBadge(p)}</td></tr>`;
+      }).join('') || '<tr><td colspan="3" class="small">Belum ada transaksi.</td></tr>'}
+      </tbody></table></div>
+    </div>`;
+}
+function statusBadge(p){
+  if(p.status==='Selesai') return '<span class="badge ok">Selesai</span>';
+  if(new Date(p.tglRencana) < new Date()) return '<span class="badge late">Terlambat</span>';
+  return '<span class="badge wait">Dipinjam</span>';
+}
+
+// ---------- DATA BARANG ----------
+function renderBarang(){
+  document.getElementById('mainArea').innerHTML=`
+    <div class="topbar"><h2>Data Barang</h2><button class="btn btn-sm" onclick="openBarangForm()">+ Tambah Barang</button></div>
+    <div class="card">
+      <div class="toolbar"><input id="qBarang" placeholder="Cari nama/kode barang..." oninput="renderBarangTable()"></div>
+      <div class="tablewrap"><table><thead><tr><th>Kode</th><th>Nama</th><th>Kategori</th><th>Stok</th><th>Kondisi</th><th>Aksi</th></tr></thead>
+      <tbody id="barangBody"></tbody></table></div>
+    </div>`;
+  renderBarangTable();
+}
+function renderBarangTable(){
+  const q=(document.getElementById('qBarang')?.value||'').toLowerCase();
+  const rows=DB.barang.filter(b=>b.nama.toLowerCase().includes(q)||b.kode.toLowerCase().includes(q));
+  document.getElementById('barangBody').innerHTML=rows.map(b=>`
+    <tr><td>${esc(b.kode)}</td><td>${esc(b.nama)}</td><td>${esc(b.kategori)}</td><td>${b.stok}</td><td>${esc(b.kondisi)}</td>
+    <td><button class="btn btn-sm btn-ghost" onclick="openBarangForm(${b.id})">✎</button>
+    <button class="btn btn-sm btn-danger" onclick="delBarang(${b.id})">🗑</button></td></tr>`).join('')
+    || '<tr><td colspan="6" class="small">Tidak ada data.</td></tr>';
+}
+function openBarangForm(id){
+  const b=id?DB.barang.find(x=>x.id===id):null;
+  document.getElementById('modalRoot').innerHTML=`
+  <div class="modal-bg"><div class="modal">
+    <h3>${b?'Ubah':'Tambah'} Barang</h3>
+    <label>Kode Barang</label><input id="mKode" value="${b?esc(b.kode):''}">
+    <label>Nama Barang</label><input id="mNama" value="${b?esc(b.nama):''}">
+    <div class="row2">
+      <div><label>Kategori</label><input id="mKat" value="${b?esc(b.kategori):''}"></div>
+      <div><label>Stok</label><input id="mStok" type="number" min="0" value="${b?b.stok:1}"></div>
+    </div>
+    <label>Kondisi</label>
+    <select id="mKondisi"><option ${b&&b.kondisi==='Baik'?'selected':''}>Baik</option><option ${b&&b.kondisi==='Rusak Ringan'?'selected':''}>Rusak Ringan</option><option ${b&&b.kondisi==='Rusak Berat'?'selected':''}>Rusak Berat</option></select>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn" onclick="saveBarang(${b?b.id:'null'})">Simpan</button>
+    </div>
+  </div></div>`;
+}
+function saveBarang(id){
+  const kode=document.getElementById('mKode').value.trim();
+  const nama=document.getElementById('mNama').value.trim();
+  const kategori=document.getElementById('mKat').value.trim();
+  const stok=parseInt(document.getElementById('mStok').value)||0;
+  const kondisi=document.getElementById('mKondisi').value;
+  if(!kode||!nama){ alert('Kode dan nama wajib diisi'); return; }
+  if(id){ const b=DB.barang.find(x=>x.id===id); Object.assign(b,{kode,nama,kategori,stok,kondisi}); }
+  else{ DB.barang.push({id:DB.nextId.barang++,kode,nama,kategori,stok,kondisi}); }
+  saveData(); closeModal(); renderBarang();
+}
+function delBarang(id){ if(confirm('Hapus barang ini?')){ DB.barang=DB.barang.filter(x=>x.id!==id); saveData(); renderBarang(); } }
+
+// ---------- DATA SISWA ----------
+function renderSiswa(){
+  document.getElementById('mainArea').innerHTML=`
+    <div class="topbar"><h2>Data Siswa</h2><button class="btn btn-sm" onclick="openSiswaForm()">+ Tambah Siswa</button></div>
+    <div class="card">
+      <div class="toolbar"><input id="qSiswa" placeholder="Cari nama/nis..." oninput="renderSiswaTable()"></div>
+      <div class="tablewrap"><table><thead><tr><th>NIS</th><th>Nama</th><th>Kelas</th><th>No HP</th><th>Aksi</th></tr></thead>
+      <tbody id="siswaBody"></tbody></table></div>
+    </div>`;
+  renderSiswaTable();
+}
+function renderSiswaTable(){
+  const q=(document.getElementById('qSiswa')?.value||'').toLowerCase();
+  const rows=DB.siswa.filter(s=>s.nama.toLowerCase().includes(q)||s.nis.includes(q));
+  document.getElementById('siswaBody').innerHTML=rows.map(s=>`
+    <tr><td>${esc(s.nis)}</td><td>${esc(s.nama)}</td><td>${esc(s.kelas)}</td><td>${esc(s.hp)}</td>
+    <td><button class="btn btn-sm btn-ghost" onclick="openSiswaForm(${s.id})">✎</button>
+    <button class="btn btn-sm btn-danger" onclick="delSiswa(${s.id})">🗑</button></td></tr>`).join('')
+    || '<tr><td colspan="5" class="small">Tidak ada data.</td></tr>';
+}
+function openSiswaForm(id){
+  const s=id?DB.siswa.find(x=>x.id===id):null;
+  document.getElementById('modalRoot').innerHTML=`
+  <div class="modal-bg"><div class="modal">
+    <h3>${s?'Ubah':'Tambah'} Siswa</h3>
+    <label>NIS</label><input id="mNis" value="${s?esc(s.nis):''}">
+    <label>Nama Siswa</label><input id="mNamaS" value="${s?esc(s.nama):''}">
+    <div class="row2">
+      <div><label>Kelas</label><input id="mKelas" value="${s?esc(s.kelas):''}"></div>
+      <div><label>No HP</label><input id="mHp" value="${s?esc(s.hp):''}"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn" onclick="saveSiswa(${s?s.id:'null'})">Simpan</button>
+    </div>
+  </div></div>`;
+}
+function saveSiswa(id){
+  const nis=document.getElementById('mNis').value.trim();
+  const nama=document.getElementById('mNamaS').value.trim();
+  const kelas=document.getElementById('mKelas').value.trim();
+  const hp=document.getElementById('mHp').value.trim();
+  if(!nis||!nama){ alert('NIS dan nama wajib diisi'); return; }
+  if(id){ const s=DB.siswa.find(x=>x.id===id); Object.assign(s,{nis,nama,kelas,hp}); }
+  else{ DB.siswa.push({id:DB.nextId.siswa++,nis,nama,kelas,hp}); }
+  saveData(); closeModal(); renderSiswa();
+}
+function delSiswa(id){ if(confirm('Hapus siswa ini?')){ DB.siswa=DB.siswa.filter(x=>x.id!==id); saveData(); renderSiswa(); } }
+
+// ---------- PEMINJAMAN ----------
+let cartItems=[];
+function renderPinjam(){
+  cartItems=[];
+  document.getElementById('mainArea').innerHTML=`
+    <div class="topbar"><h2>Transaksi Peminjaman</h2></div>
+    <div class="card">
+      <div class="row2">
+        <div><label>Pilih Siswa</label><select id="pSiswa">${DB.siswa.map(s=>`<option value="${s.id}">${esc(s.nama)} (${esc(s.nis)})</option>`).join('')||'<option disabled>Belum ada siswa</option>'}</select></div>
+        <div><label>Tanggal Rencana Kembali</label><input id="pTglRencana" type="date"></div>
+      </div>
+      <label style="margin-top:10px">Tambah Barang</label>
+      <div class="item-row">
+        <select id="pBarang">${DB.barang.filter(b=>b.stok>0).map(b=>`<option value="${b.id}">${esc(b.nama)} (stok:${b.stok})</option>`).join('')||'<option disabled>Stok kosong</option>'}</select>
+        <input id="pQty" type="number" min="1" value="1">
+        <button class="btn btn-sm" onclick="addCartItem()">+ Tambah</button>
+      </div>
+      <div class="tablewrap"><table><thead><tr><th>Barang</th><th>Qty</th><th></th></tr></thead><tbody id="cartBody">
+      <tr><td colspan="3" class="small">Belum ada barang ditambahkan.</td></tr></tbody></table></div>
+      <button class="btn btn-accent" style="margin-top:12px;max-width:220px" onclick="submitPinjam()">💾 Simpan Peminjaman</button>
+    </div>`;
+}
+function addCartItem(){
+  const idB=parseInt(document.getElementById('pBarang').value);
+  const qty=parseInt(document.getElementById('pQty').value)||1;
+  const b=DB.barang.find(x=>x.id===idB);
+  if(!b) return;
+  if(qty>b.stok){ alert('Jumlah melebihi stok tersedia ('+b.stok+')'); return; }
+  const existing=cartItems.find(c=>c.idBarang===idB);
+  if(existing) existing.qty+=qty; else cartItems.push({idBarang:idB,qty});
+  renderCart();
+}
+function renderCart(){
+  document.getElementById('cartBody').innerHTML = cartItems.length ? cartItems.map((c,i)=>{
+    const b=DB.barang.find(x=>x.id===c.idBarang);
+    return `<tr><td>${esc(b.nama)}</td><td>${c.qty}</td><td><button class="btn btn-sm btn-danger" onclick="cartItems.splice(${i},1);renderCart()">🗑</button></td></tr>`;
+  }).join('') : '<tr><td colspan="3" class="small">Belum ada barang ditambahkan.</td></tr>';
+}
+function submitPinjam(){
+  const idSiswa=parseInt(document.getElementById('pSiswa').value);
+  const tglRencana=document.getElementById('pTglRencana').value;
+  if(!idSiswa){ alert('Pilih siswa terlebih dahulu'); return; }
+  if(!tglRencana){ alert('Isi tanggal rencana kembali'); return; }
+  if(!cartItems.length){ alert('Tambahkan minimal satu barang'); return; }
+  cartItems.forEach(c=>{ const b=DB.barang.find(x=>x.id===c.idBarang); b.stok-=c.qty; });
+  DB.peminjaman.push({
+    id:DB.nextId.pinjam++, idSiswa, tglPinjam:new Date().toISOString().slice(0,10),
+    tglRencana, status:'Dipinjam', items:cartItems.map(c=>({...c})), tglKembali:null, kondisiKembali:null
+  });
+  saveData();
+  alert('✅ Peminjaman berhasil disimpan.');
+  goPage('dashboard');
+}
+
+// ---------- PENGEMBALIAN ----------
+function renderKembali(){
+  const aktif=DB.peminjaman.filter(p=>p.status==='Dipinjam');
+  document.getElementById('mainArea').innerHTML=`
+    <div class="topbar"><h2>Pengembalian Barang</h2></div>
+    <div class="card">
+      <div class="tablewrap"><table><thead><tr><th>Siswa</th><th>Barang</th><th>Tgl Pinjam</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+      ${aktif.map(p=>{
+        const s=DB.siswa.find(x=>x.id===p.idSiswa);
+        const items=p.items.map(it=>{const b=DB.barang.find(x=>x.id===it.idBarang);return `${esc(b?b.nama:'-')} x${it.qty}`}).join(', ');
+        return `<tr><td>${esc(s?s.nama:'-')}</td><td>${items}</td><td>${p.tglPinjam}</td><td>${statusBadge(p)}</td>
+        <td><button class="btn btn-sm btn-accent" onclick="prosesKembali(${p.id})">Proses Kembali</button></td></tr>`;
+      }).join('') || '<tr><td colspan="5" class="small">Tidak ada peminjaman aktif.</td></tr>'}
+      </tbody></table></div>
+    </div>`;
+}
+function prosesKembali(id){
+  const p=DB.peminjaman.find(x=>x.id===id);
+  const kondisi=prompt('Kondisi barang saat kembali? (Baik / Rusak Ringan / Rusak Berat)','Baik');
+  if(kondisi===null) return;
+  p.items.forEach(it=>{ const b=DB.barang.find(x=>x.id===it.idBarang); if(b) b.stok+=it.qty; });
+  p.status='Selesai'; p.tglKembali=new Date().toISOString().slice(0,10); p.kondisiKembali=kondisi||'Baik';
+  saveData(); renderKembali();
+}
+
+// ---------- LAPORAN ----------
+function renderLaporan(){
+  document.getElementById('mainArea').innerHTML=`
+    <div class="topbar"><h2>Laporan Transaksi</h2><button class="btn btn-sm btn-ghost" onclick="window.print()">🖨️ Cetak</button></div>
+    <div class="card">
+      <div class="tablewrap"><table><thead><tr><th>Siswa</th><th>Barang</th><th>Tgl Pinjam</th><th>Tgl Kembali</th><th>Status</th></tr></thead><tbody>
+      ${DB.peminjaman.slice().reverse().map(p=>{
+        const s=DB.siswa.find(x=>x.id===p.idSiswa);
+        const items=p.items.map(it=>{const b=DB.barang.find(x=>x.id===it.idBarang);return `${esc(b?b.nama:'-')} x${it.qty}`}).join(', ');
+        return `<tr><td>${esc(s?s.nama:'-')}</td><td>${items}</td><td>${p.tglPinjam}</td><td>${p.tglKembali||'-'}</td><td>${statusBadge(p)}</td></tr>`;
+      }).join('') || '<tr><td colspan="5" class="small">Belum ada transaksi.</td></tr>'}
+      </tbody></table></div>
+    </div>`;
+}
+</script>
+</body>
+</html>
